@@ -1,6 +1,6 @@
 # 💸 CashFlow POS — Point of Sale Application
 
-A full-stack Point of Sale (POS) system built with **Next.js**, styled with **Tailwind CSS**, and powered by modern tools like **Firebase Genkit** and **ShadCN UI**.
+A full-stack Point of Sale (POS) system built with **Next.js**, styled with **Tailwind CSS**, and powered by modern tools like **ShadCN UI**.
 
 Designed for retailers to manage **sales**, **inventory**, and **customers** — with both a public-facing POS interface and a secure admin dashboard.
 
