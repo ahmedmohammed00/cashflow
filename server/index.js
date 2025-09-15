@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import apiRoutes from './routes/api.js';
 import connectDB from "./config/config.js";
@@ -13,7 +12,6 @@ app.use(express.json());
 
 
 // Middleware
-app.use(cookieParser());
 
 app.use(cors({
     origin: 'http://localhost:3000', // frontend origin

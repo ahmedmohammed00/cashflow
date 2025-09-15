@@ -13,6 +13,7 @@ const authMiddleware = async function(req, res, next) {
         // Token is expected to be in "Bearer <token>" format
 
         const token = authHeader.split(' ')[1];
+        console.log(token);
         if (!token) {
             return res.status(401).json({ msg: 'Token format is invalid, authorization denied' });
         }

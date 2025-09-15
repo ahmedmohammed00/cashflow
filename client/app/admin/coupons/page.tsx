@@ -4,10 +4,26 @@ import type { Coupon } from '@/lib/types';
 
 
 async function getCoupons(): Promise<Coupon[]> {
+    try {
+        const res = await fetch('http://localhost:5005/api/coupons', {
+            method: 'GET',
+            credentials:'include',
+            headers: {
+                Cookie: '__Security_access_token=my_secret_token'
+            }
+        });
 
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return []
+        if (!res.ok) {
+            console.error('Fetch failed with status:', res.status);
+            return [];
+        }
 
+        const data = await res.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching coupons:', error);
+        return [];
+    }
 }
 
 export default async function CouponAdminPage() {

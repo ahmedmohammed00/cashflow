@@ -13,7 +13,9 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import Link from "next/link";
+import { subDays, isWithinInterval } from "date-fns";
+import type { DateRange } from "react-day-picker";
+
 import {
     Table,
     TableBody,
@@ -24,32 +26,47 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PlusCircle, ChevronDown, ChevronUp, X } from "lucide-react";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
+import type { Sale } from "@/lib/types";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
-    isLoading?: boolean;
 }
 
-export function DataTable<TData, TValue>({
-                                             columns,
-                                             data,
-                                             isLoading = false,
-                                         }: DataTableProps<TData, TValue>) {
+export function DataTable<TData extends Sale, TValue>({
+                                                          columns,
+                                                          data,
+                                                      }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = React.useState({});
+    const [date, setDate] = React.useState<DateRange | undefined>({
+        from: subDays(new Date(), 365),
+        to: new Date(),
+    });
+
+    // Filter data by date range
+    const filteredData = React.useMemo(() => {
+        if (!date?.from) return data;
+        const fromDate = date.from;
+        const toDate = date.to ?? new Date();
+
+        return data.filter((sale) =>
+            isWithinInterval(sale.date, { start: fromDate, end: toDate })
+        );
+    }, [data, date]);
 
     const table = useReactTable({
-        data,
+        data: filteredData,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -67,26 +84,25 @@ export function DataTable<TData, TValue>({
         },
     });
 
-    // Clear filter for "code" column
-    const clearCodeFilter = () => {
-        table.getColumn("code")?.setFilterValue(undefined);
+    const clearIdFilter = () => {
+        table.getColumn("id")?.setFilterValue(undefined);
     };
 
     return (
         <div className="flex flex-col space-y-4">
-            {/* Filter and controls */}
+            {/* Filters and controls */}
             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 py-4">
                 <div className="relative w-full sm:max-w-sm">
                     <Input
-                        placeholder="تصفية الكوبونات حسب الرمز..."
-                        value={(table.getColumn("code")?.getFilterValue() as string) ?? ""}
-                        onChange={(e) => table.getColumn("code")?.setFilterValue(e.target.value)}
-                        aria-label="تصفية الكوبونات حسب الرمز"
+                        placeholder="تصفية حسب معرف البيع..."
+                        value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
+                        onChange={(e) => table.getColumn("id")?.setFilterValue(e.target.value)}
+                        aria-label="تصفية حسب معرف البيع"
                         className="pr-10"
                     />
-                    {(table.getColumn("code")?.getFilterValue() as string)?.length > 0 && (
+                    {(table.getColumn("id")?.getFilterValue() as string)?.length > 0 && (
                         <button
-                            onClick={clearCodeFilter}
+                            onClick={clearIdFilter}
                             aria-label="مسح الفلتر"
                             className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600 transition"
                             type="button"
@@ -96,50 +112,43 @@ export function DataTable<TData, TValue>({
                     )}
                 </div>
 
-                <div className="flex w-full sm:w-auto gap-2 ml-auto rtl:ml-0 rtl:mr-auto">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-full sm:w-auto" aria-label="تحديد الأعمدة">
-                                الأعمدة
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="max-h-60 overflow-auto">
-                            {table
-                                .getAllColumns()
-                                .filter((column) => column.getCanHide())
-                                .map((column) => (
-                                    <DropdownMenuCheckboxItem
-                                        key={column.id}
-                                        className="capitalize"
-                                        checked={column.getIsVisible()}
-                                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                    >
-                                        {column.id === "code"
-                                            ? "الرمز"
-                                            : column.id === "discount"
-                                                ? "الخصم"
-                                                : column.id === "active"
-                                                    ? "الحالة"
-                                                    : column.id === "usageCount"
-                                                        ? "الاستخدام"
-                                                        : column.id === "expiresAt"
-                                                            ? "تاريخ الانتهاء"
-                                                            : column.id}
-                                    </DropdownMenuCheckboxItem>
-                                ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <Button asChild className="w-full sm:w-auto" aria-label="إضافة كوبون جديد">
-                        <Link href="/admin/coupons/new" className="flex items-center justify-center gap-1">
-                            <PlusCircle className="ml-1 h-4 w-4" />
-                            إضافة كوبون
-                        </Link>
-                    </Button>
+                <div className="w-full sm:w-auto">
+                    <DateRangePicker date={date} onDateChange={setDate} />
                 </div>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full sm:w-auto sm:ml-auto" aria-label="تحديد الأعمدة">
+                            الأعمدة
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="max-h-60 overflow-auto">
+                        {table
+                            .getAllColumns()
+                            .filter((column) => column.getCanHide())
+                            .map((column) => (
+                                <DropdownMenuCheckboxItem
+                                    key={column.id}
+                                    className="capitalize"
+                                    checked={column.getIsVisible()}
+                                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                                >
+                                    {column.id === "id"
+                                        ? "المعرف"
+                                        : column.id === "date"
+                                            ? "التاريخ"
+                                            : column.id === "status"
+                                                ? "الحالة"
+                                                : column.id === "total"
+                                                    ? "الإجمالي"
+                                                    : column.id}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
-            {/* Table with horizontal scroll on small screens */}
+            {/* Table with horizontal scroll */}
             <div className="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
                 <Table className="min-w-[600px]">
                     <TableHeader>
@@ -186,13 +195,7 @@ export function DataTable<TData, TValue>({
                     </TableHeader>
 
                     <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                                    جاري التحميل...
-                                </TableCell>
-                            </TableRow>
-                        ) : table.getRowModel().rows.length ? (
+                        {table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
@@ -247,4 +250,3 @@ export function DataTable<TData, TValue>({
         </div>
     );
 }
-

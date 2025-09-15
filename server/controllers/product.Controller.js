@@ -2,6 +2,7 @@ import Product from '../models/product.Model.js';
 import Sale from '../models/sale.Model.js';
 // Not used in this controller's current scope, but kept as per original
 import mongoose from 'mongoose';
+import categoryModel from "../models/category.Model.js";
 
 // IMPORTANT: All routes in this controller are protected and assume an auth middleware
 // has run and populated `req.user` with the authenticated user's details,
@@ -19,6 +20,8 @@ export const getAllProducts = async (req, res) => {
         const products = await Product.find({ organization: req.user.organization })
             .populate('category', 'name') // Populate category name for display
             .lean(); // Use .lean() for faster query execution if not modifying Mongoose documents
+
+        console.log(products);
 
         res.status(200).json({ success: true, data: products });
     } catch (error) {
