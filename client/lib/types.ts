@@ -1,4 +1,17 @@
 
+export type RegisterFormValues = {
+
+    name: string;
+    email: string;
+    password: string;
+    organizationName: string;
+    mobileNumber: string;
+
+};
+export type LoginFormValues = {
+    email: string;
+    password: string;
+};
 
 export type ProductCategory = {
     id: string;
@@ -6,19 +19,17 @@ export type ProductCategory = {
     productCount: number;
 }
 
-export type Product = {
+export interface Product {
     id: string;
     name: string;
     sku: string;
-    barcode?: string;
     price: number;
     cost: number;
     stock: number;
-    category: 'Drinks' | 'Snacks' | 'Electronics' | 'Apparel' | 'Books';
-    unit: 'piece' | 'kg' | 'liter';
-    imageUrl: string;
-    'data-ai-hint'?: string;
-};
+    categoryId: string;
+    supplier: string;
+}
+
 
 export type CartItem = {
     product: Product;
@@ -26,15 +37,24 @@ export type CartItem = {
     discount: number; // as a percentage, e.g., 10 for 10%
 };
 
-export type Coupon = {
-    id: string;
+    export type Coupon = {
+        id: string;
+        code: string;
+        discount: number; // as a percentage
+        active: boolean;
+        expiresAt: Date | null;
+        usageLimit: number | null;
+        usageCount: number;
+    };
+
+type CouponFormData = {
     code: string;
-    discount: number; // as a percentage
+    discount: number;
     active: boolean;
-    expiresAt: Date | null;
-    usageLimit: number | null;
-    usageCount: number;
+    expiresAt?: Date | null;
+    usageLimit?: number | null;
 };
+
 
 export type SaleItem = {
     productId: string;

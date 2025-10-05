@@ -114,8 +114,8 @@ export function Cart({ cartItems, onUpdateCart, onClearCart }: CartProps) {
                     <CardContent className="p-4">
                         {cartItems.length > 0 ? (
                             <ul className="space-y-4">
-                                {cartItems.map((item) => (
-                                    <li key={item.product.id}>
+                                {cartItems.map((item, index) => (
+                                    <li key={`${item.product.id}-${index}`}>
                                         <CartItemComponent
                                             item={item}
                                             onQuantityChange={handleQuantityChange}
@@ -123,6 +123,7 @@ export function Cart({ cartItems, onUpdateCart, onClearCart }: CartProps) {
                                         />
                                     </li>
                                 ))}
+
                             </ul>
                         ) : (
                             <div className="text-center text-muted-foreground py-16">

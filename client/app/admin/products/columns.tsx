@@ -1,5 +1,4 @@
-
-"use client"
+'use client'
 
 import * as React from "react"
 import { ColumnDef } from "@tanstack/react-table"
@@ -30,30 +29,19 @@ import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { deleteProduct } from "@/lib/products" // import API helper
 
-
-function DeleteAction({ product }: { product: Product }) {
+function DeleteAction({ product, token }: { product: Product, token: string }) {
     const router = useRouter();
 
     const handleDelete = async () => {
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products/${product.id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete product');
-            }
-
-            toast.error("تم حذف المنتج", {
-                description: `تم حذف المنتج ${product.name} بنجاح.`,
-            });
+        if (!token) return;
+        const success = await deleteProduct(product.id, token);
+        if (success) {
+            toast.success("تم حذف المنتج", { description: `تم حذف المنتج ${product.name} بنجاح.` });
             router.refresh();
-        } catch (error) {
-            console.error("Delete failed:", error);
-            toast.error("خطأ", {
-                description: "فشل حذف المنتج. الرجاء المحاولة مرة أخرى.",
-            });
+        } else {
+            toast.error("فشل حذف المنتج", { description: "الرجاء المحاولة مرة أخرى." });
         }
     }
 
@@ -113,48 +101,36 @@ export const columns: ColumnDef<Product>[] = [
     },
     {
         accessorKey: "name",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    الاسم
-                    <ArrowUpDown className="mr-2 h-4 w-4" />
-                </Button>
-            )
-        },
-        cell: ({ row }) => {
-            return <Link href={`/admin/products/${row.original.id}`} className="hover:underline">{row.original.name}</Link>
-        }
+        header: ({ column }) => (
+            <Button
+                variant="ghost"
+                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            >
+                الاسم
+                <ArrowUpDown className="mr-2 h-4 w-4" />
+            </Button>
+        ),
+        cell: ({ row }) => <Link href={`/admin/products/${row.original.id}`} className="hover:underline">{row.original.name}</Link>
     },
     {
         accessorKey: "category",
         header: "الفئة",
-        cell: ({ row }) => {
-            return <Badge variant="outline">{row.original.category}</Badge>
-        }
+        cell: ({ row }) => <Badge variant="outline">{row.original.category}</Badge>
     },
     {
         accessorKey: "price",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    السعر
-                    <ArrowUpDown className="mr-2 h-4 w-4" />
-                </Button>
-            )
-        },
+        header: ({ column }) => (
+            <Button
+                variant="ghost"
+                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            >
+                السعر
+                <ArrowUpDown className="mr-2 h-4 w-4" />
+            </Button>
+        ),
         cell: ({ row }) => {
             const amount = parseFloat(row.getValue("price"))
-            const formatted = new Intl.NumberFormat("ar-SA", {
-                style: "currency",
-                currency: "SAR",
-            }).format(amount)
-
+            const formatted = new Intl.NumberFormat("ar-SA", { style: "currency", currency: "SAR" }).format(amount)
             return <div className="text-left font-medium">{formatted}</div>
         },
     },
@@ -180,7 +156,8 @@ export const columns: ColumnDef<Product>[] = [
     {
         id: "actions",
         cell: ({ row }) => {
-            const product = row.original
+            const product = row.original;
+            const token = localStorage.getItem("token"); // fetch token here
 
             return (
                 <DropdownMenu>
@@ -192,9 +169,7 @@ export const columns: ColumnDef<Product>[] = [
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(product.id)}
-                        >
+                        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.id)}>
                             نسخ معرف المنتج
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -202,7 +177,8 @@ export const columns: ColumnDef<Product>[] = [
                             <Link href={`/admin/products/${product.id}`}>تعديل المنتج</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DeleteAction product={product} />
+                        {/* Delete action with confirmation */}
+                        {token && <DeleteAction product={product} token={token} />}
                     </DropdownMenuContent>
                 </DropdownMenu>
             )

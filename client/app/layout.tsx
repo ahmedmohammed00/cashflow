@@ -24,10 +24,9 @@ export default function RootLayout({
     return (
         <html lang="ar" dir="rtl" suppressHydrationWarning>
         <body className={cn('min-h-screen bg-background antialiased flex flex-col', cairo.className)}>
-
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Toaster />
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Toaster />
         </body>
         </html>
     );

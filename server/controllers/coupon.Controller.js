@@ -26,25 +26,31 @@ export const getCoupon = async (req, res) => {
 };
 
 // @desc    Create a coupon for the organization
-// @route   POST /api/coupons
 export const addCoupon = async (req, res) => {
     try {
-        const { code, discountType, discountValue, usageLimitEnabled, usageLimit, expiryDate } = req.body;
+        const { code, discountType, discountValue, status, usageLimit, expiryDate } = req.body;
 
-        const newCouponData = {
-            ...req.body,
-            organization: req.user.organization, // Assign to the user's organization
-            usageLimit: usageLimitEnabled ? usageLimit : null,
-            expiryDate: expiryDate || null,
-            status: 'active', // Default to active
-        };
+        if (!code || !discountType || discountValue == null) {
+            return res.status(400).json({ success: false, error: 'Missing required fields.' });
+        }
 
-        const coupon = await Coupon.create(newCouponData);
+        const coupon = await Coupon.create({
+            code,
+            discountType,
+            discountValue,
+            status,
+            usageLimit: usageLimit ?? null,
+            expiryDate: expiryDate ?? null,
+            organization: req.user.organization, // assumes user is authenticated
+        });
+
         res.status(201).json({ success: true, data: coupon });
     } catch (error) {
-        res.status(400).json({ success: false, error: error.message });
+        console.error('Error creating coupon:', error);
+        res.status(500).json({ success: false, error: 'Server error creating coupon.' });
     }
 };
+
 
 // @desc    Update a coupon for the organization
 // @route   PUT /api/coupons/:id

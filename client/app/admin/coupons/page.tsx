@@ -1,41 +1,44 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { columns } from './columns';
 import { DataTable } from './data-table';
 import type { Coupon } from '@/lib/types';
+import { fetchCoupons } from '@/lib/coupon';
+import { toast } from 'sonner';
 
+export default function CouponAdminPage() {
+    const [data, setData] = useState<Coupon[]>([]);
+    const [loading, setLoading] = useState(true);
 
-async function getCoupons(): Promise<Coupon[]> {
-    try {
-        const res = await fetch('http://localhost:5005/api/coupons', {
-            method: 'GET',
-            credentials:'include',
-            headers: {
-                Cookie: '__Security_access_token=my_secret_token'
+    useEffect(() => {
+        const loadCoupons = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                toast.error("لا يوجد توكن. الرجاء تسجيل الدخول.");
+                setLoading(false);
+                return;
             }
-        });
 
-        if (!res.ok) {
-            console.error('Fetch failed with status:', res.status);
-            return [];
-        }
+            const coupons = await fetchCoupons(token);
+            setData(coupons);
+            setLoading(false);
+        };
 
-        const data = await res.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching coupons:', error);
-        return [];
-    }
-}
-
-export default async function CouponAdminPage() {
-
-    const data = await getCoupons();
+        loadCoupons();
+    }, []);
 
     return (
         <div className="w-full">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">إدارة الكوبونات</h1>
             </div>
-            <DataTable columns={columns} data={data} />
+
+            {loading ? (
+                <p>جارٍ التحميل...</p>
+            ) : (
+                <DataTable columns={columns} data={data} />
+            )}
         </div>
     );
 }

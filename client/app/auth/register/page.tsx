@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { GoogleIcon } from '@/components/icons';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import {registerUserApi} from "@/lib/auth";
 
 
 const registerSchema = z.object({
@@ -33,9 +35,8 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+    const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
-
-
 
     const form = useForm<RegisterFormValues>({
         resolver: zodResolver(registerSchema),
@@ -43,55 +44,27 @@ export default function RegisterPage() {
             name: '',
             email: '',
             password: '',
-            organizationName:'',
-            mobileNumber: '' ,
+            organizationName: '',
+            mobileNumber: '',
         },
     });
 
-
     const onSubmit = async (values: RegisterFormValues) => {
         setIsLoading(true);
-        console.log('Registration form submitted:', values);
         try {
-            const res = await fetch('http://localhost:5005/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(values),
+            await registerUserApi(values);
+
+            toast.success('تم إنشاء الحساب بنجاح', {
+                description: 'يمكنك الآن تسجيل الدخول إلى حسابك.',
             });
 
-            if (!res.ok) {
-                // Try to parse error message or fallback
-                let errorMsg = "حاول تسجيل مره اخري لاحقا";
-                try {
-                    const errorData = await res.json();
-                    errorMsg = errorData.message || errorMsg;
-                } catch {
-                    // ignore JSON parse errors
-                }
-
-                setIsLoading(false);
-                toast.error("فشل التسجيل", { description: errorMsg });
-                return;
-            }
-
-            const data = await res.json();
-            console.log(data);
+            router.push('/auth/login');
+        } catch (error: any) {
+            toast.error('فشل التسجيل', { description: error.message });
+        } finally {
             setIsLoading(false);
-            toast.success("تم إنشاء الحساب بنجاح", {
-                description: "تم إرسال بريد إلكتروني للتحقق.",
-            });
-        } catch (err) {
-            console.error(err);
-            setIsLoading(false);
-            toast.error("حدث خطأ في الشبكة", {
-                description: "يرجى المحاولة مرة أخرى لاحقًا.",
-            });
         }
     };
-
         /*
         setTimeout(() => {
             setIsLoading(false);

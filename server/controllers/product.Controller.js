@@ -65,10 +65,10 @@ export const getProduct = async (req, res) => {
  */
 export const addProduct = async (req, res) => {
     try {
-        const { name, sku, description, categoryId, price, cost, stock, supplier, imageUrl } = req.body;
+        const { name, sku, description, categoryId, price, cost, stock, supplier } = req.body;
 
         // Basic validation (more robust validation should be done with Joi/Express-validator)
-        if (!name || !sku || !description || !price || !cost || !stock || !supplier) {
+        if (!name || !sku || !price || !cost || !stock || !supplier) {
             return res.status(400).json({ success: false, error: 'Missing required product fields.' });
         }
 
@@ -79,15 +79,16 @@ export const addProduct = async (req, res) => {
         const product = await Product.create({
             name,
             sku,
-            description,
-            category: categoryId, // Mongoose will handle ObjectId conversion if categoryId is string
+            description: description || '',   // optional
+            category: categoryId,
             price,
             cost,
             stock,
             supplier,
-            status,
-            organization: req.user.organization
+            organization: req.user.organization,
+            imageUrl: imageUrl || '', // optional
         });
+
 
         res.status(201).json({ success: true, data: product });
     } catch (error) {

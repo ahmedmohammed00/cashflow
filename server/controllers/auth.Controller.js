@@ -71,73 +71,74 @@ export const registerUser = async (req, res) => {
 
 // @desc    Authenticate user & get token (Login)
 // @route   POST /api/auth/login
-export const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+    export const loginUser = async (req, res) => {
+        const { email, password } = req.body;
 
-    try {
-        // Check if user exists and populate their organization
-        let user = await User.findOne({ email }).populate('organization');
-        console.log(user);
-        if (!user) {
-            return res.status(400).json({ success: false, error: 'Invalid credentials' });
-        }
-
-        // Check user status before proceeding
-        if (user.status === 'pending') {
-            return res.status(403).json({ success: false, error: 'Your account is pending approval.' });
-        }
-        if (user.status === 'suspended') {
-            return res.status(403).json({ success: false, error: 'Your account has been suspended.' });
-        }
-
-        // Check password
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ success: false, error: 'Invalid credentials' });
-        }
-
-        // Return jsonwebtoken
-        const payload = {
-            user: {
-                id: user.id,
-                role: user.role,
-                organization: user.organization._id,
-                name: user.name,
-                email: user.email,
-                organizationName: user.organization.name
+        try {
+            // Check if user exists and populate their organization
+            let user = await User.findOne({ email }).populate('organization');
+            console.log(user);
+            if (!user) {
+                return res.status(400).json({ success: false, error: 'Invalid credentials' });
             }
-        };
-        console.log(payload);
-        jwt.sign(payload, process.env.JWT_SECRET , { expiresIn: 3600 }, (err, token) => {
-            if (err) throw err;
 
-            res.cookie('__Security_access_token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production', // true if HTTPS
-                maxAge: 3600000, // 1 hour
-                sameSite: 'Strict'
-            });
+            // Check user status before proceeding
+            if (user.status === 'pending') {
+                return res.status(403).json({ success: false, error: 'Your account is pending approval.' });
+            }
+            if (user.status === 'suspended') {
+                return res.status(403).json({ success: false, error: 'Your account has been suspended.' });
+            }
 
+            // Check password
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ success: false, error: 'Invalid credentials' });
+            }
 
-
-            res.json({
-                success: true,
-                token,
+            // Return jsonwebtoken
+            const payload = {
                 user: {
+                    id: user.id,
+                    role: user.role,
+                    organization: user.organization._id,
                     name: user.name,
                     email: user.email,
-                    role: user.role,
-                    organization: user.organization
+                    organizationName: user.organization.name
                 }
+            };
+            console.log(payload);
+            jwt.sign(payload, process.env.JWT_SECRET , { expiresIn: 3600 }, (err, token) => {
+                if (err) throw err;
+
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    maxAge: 3600000,
+                    secure: false,      // must be false for HTTP
+                    sameSite: 'lax',    // allow dev
+                });
+
+
+
+
+                res.json({
+                    success: true,
+                    token,
+                    user: {
+                        name: user.name,
+                        email: user.email,
+                        role: user.role,
+                        organization: user.organization
+                    }
+                });
             });
-        });
 
 
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).send('Server error');
-    }
-};
+        } catch (error) {
+            console.error(error.message);
+            res.status(500).send('Server error');
+        }
+    };
 
 // @desc    Get logged in user
 // @route   GET /api/auth
@@ -152,3 +153,24 @@ export const getMe = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+
+
+
+export function checkAuth(req, res, next) {
+    try {
+        // Get token from cookie
+        const token = req.cookies.token;
+
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'Not authenticated' });
+        }
+
+        // Verify JWT
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded; // attach decoded user info to request
+        next(); // pass to the next handler
+    } catch (err) {
+        return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    }
+}
