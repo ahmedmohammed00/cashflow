@@ -1,33 +1,46 @@
-import type { Metadata } from 'next';
-import { Cairo } from 'next/font/google';
-import './globals.css';
-import { cn } from '@/lib/utils';
-import { Header } from '@/components/header';
-import { Toaster } from '@/components/ui/sonner';
+import type { Metadata } from 'next'
+import { Cairo, Inter } from 'next/font/google'
+import './globals.css'
 
-const cairo = Cairo({
-    subsets: ['arabic', 'latin'],
-    weight: ['400', '500', '600', '700'],
-    variable: '--font-cairo',
+const cairoFont = Cairo({
+    subsets: ["arabic", "latin"],
+    weight: ['400', '500', '600', '700', '800']
 });
+const interFont = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: 'CashFlow POS',
-    description: 'تطبيق نقاط البيع',
-};
+    title: 'CashFlow POS - نظام نقاط البيع الحديث',
+    description: 'نظام نقاط البيع الشامل لإدارة المبيعات والمخزون والعملاء. ابدأ بسهولة وحقق النمو بسرعة.',
+    generator: 'v0.app',
+    icons: {
+        icon: [
+            {
+                url: '/icon-light-32x32.png',
+                media: '(prefers-color-scheme: light)',
+            },
+            {
+                url: '/icon-dark-32x32.png',
+                media: '(prefers-color-scheme: dark)',
+            },
+            {
+                url: '/icon.svg',
+                type: 'image/svg+xml',
+            },
+        ],
+        apple: '/apple-icon.png',
+    },
+}
 
 export default function RootLayout({
                                        children,
                                    }: Readonly<{
-    children: React.ReactNode;
+    children: React.ReactNode
 }>) {
     return (
-        <html lang="ar" dir="rtl" suppressHydrationWarning>
-        <body className={cn('min-h-screen bg-background antialiased flex flex-col', cairo.className)}>
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Toaster />
+        <html lang="ar" dir="rtl">
+        <body className={`${cairoFont.className} font-sans antialiased`}>
+        {children}
         </body>
         </html>
-    );
+    )
 }

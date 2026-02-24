@@ -20,7 +20,6 @@ import { Input } from '@/components/ui/input';
 import { GoogleIcon } from '@/components/icons';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { loginUserApi } from '../../../lib/auth'; // create this API function
 
 // Validation schema
 const loginSchema = z.object({
@@ -39,12 +38,18 @@ export default function LoginPage() {
         defaultValues: { email: '', password: '' },
     });
 
-    const onSubmit = async (values: LoginFormValues) => {
+    const handleLogin = async (values: LoginFormValues) => {
         setIsLoading(true);
         try {
-            await loginUserApi(values); // calls backend
-            toast.success('تم تسجيل الدخول بنجاح', { description: 'مرحباً بعودتك!' });
-            router.push('/pos');
+            await fetch('http://localhost:3001/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(values),
+            })
+            toast.success('تم تسجيل الدخول بنجاح')
+            router.push('/');
         } catch (error: unknown) {
             if (error instanceof Error) {
                 toast.error('فشل تسجيل الدخول', { description: error.message });
@@ -67,7 +72,7 @@ export default function LoginPage() {
                 </div>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6 w-full" noValidate>
+                    <form onSubmit={form.handleSubmit(handleLogin)} className="grid gap-6 w-full" noValidate>
                         {/* Email */}
                         <FormField
                             control={form.control}

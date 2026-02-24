@@ -21,7 +21,6 @@ import { Input } from '@/components/ui/input';
 import { GoogleIcon } from '@/components/icons';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import {registerUserApi} from "@/lib/auth";
 
 
 const registerSchema = z.object({
@@ -49,38 +48,38 @@ export default function RegisterPage() {
         },
     });
 
-    const onSubmit = async (values: RegisterFormValues) => {
-        setIsLoading(true);
-        try {
-            await registerUserApi(values);
+    const handleSubmit = async (values: RegisterFormValues) => {
+         try{
+             await fetch('api/auth/register', {
+                 method: 'POST',
+                 body: JSON.stringify(values),
+                 headers: {
+                     'Content-Type': 'application/json',
+                 }
+             })
 
-            toast.success('تم إنشاء الحساب بنجاح', {
-                description: 'يمكنك الآن تسجيل الدخول إلى حسابك.',
-            });
+             toast.success('تم انشاء حساب بنجاح')
+             router.push('/')
+         }
+         catch(error: unknown) {
+             if (error instanceof Error)
+             {
+                 toast.error('فشل انشاء حساب', {description: error.message});
+             }
+             else
+             {
+                     toast.error('فشل تسجيل الدخول', { description: 'حصل خطأ غير معروف' });
+             }
 
-            router.push('/auth/login');
-        } catch (error: any) {
-            toast.error('فشل التسجيل', { description: error.message });
-        } finally {
-            setIsLoading(false);
-        }
+             }
+             finally {
+             setIsLoading(false);
+         }
+
+
+
+
     };
-        /*
-        setTimeout(() => {
-            setIsLoading(false);
-            // Simulate failure if email already exists
-            if (values.email === 'exists@example.com') {
-                toast.error("فشل التسجيل", {
-                    description: "هذا البريد الإلكتروني مستخدم بالفعل. يرجى استخدام بريد آخر.",
-                })
-            } else {
-                toast.success("تم إنشاء الحساب بنجاح", {
-                    description: "تم إرسال بريد إلكتروني للتحقق."
-                })
-            }
-        }, 1500)
-        */
-
 
 
     return (
@@ -99,7 +98,7 @@ export default function RegisterPage() {
 
                         <Form {...form}>
                             <form
-                                onSubmit={form.handleSubmit(onSubmit)}
+                                onSubmit={form.handleSubmit(handleSubmit)}
                                 className="grid gap-4 w-full max-w-md mx-auto"
                             >
                                 {/* Full Name */}

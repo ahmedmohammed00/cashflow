@@ -9,7 +9,6 @@ import { Smartphone, Loader2, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
-import { fetchProducts as fetchProductsLib } from '../../lib/products'; // import your lib function
 
 function ProductTableSkeleton() {
   return (
