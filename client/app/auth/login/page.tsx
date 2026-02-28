@@ -38,28 +38,29 @@ export default function LoginPage() {
         defaultValues: { email: '', password: '' },
     });
 
-    const handleLogin = async (values: LoginFormValues) => {
+    const handleSubmit = async (values: LoginFormValues) => {
         setIsLoading(true);
-        try {
-            await fetch('http://localhost:3001/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(values),
-            })
-            toast.success('تم تسجيل الدخول بنجاح')
-            router.push('/');
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                toast.error('فشل تسجيل الدخول', { description: error.message });
-            } else {
-                toast.error('فشل تسجيل الدخول', { description: 'حصل خطأ غير معروف' });
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            body: JSON.stringify(values),
+            headers: {
+                'Content-Type': 'application/json',
             }
-        } finally {
+        })
+
+
+        if (response.ok ) {
             setIsLoading(false);
+            router.push('/')
         }
+        else{
+            setIsLoading(false);
+            console.log('error occured')
+        }
+
     };
+
+
 
     return (
         <div dir="rtl" className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-background">
@@ -72,7 +73,7 @@ export default function LoginPage() {
                 </div>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleLogin)} className="grid gap-6 w-full" noValidate>
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-6 w-full" noValidate>
                         {/* Email */}
                         <FormField
                             control={form.control}

@@ -6,27 +6,22 @@ export async function POST(req: Request) {
     const backendResponse = await fetch('http://localhost:5005/api/auth/login', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
     });
 
     const data = await backendResponse.json();
+    console.log(data);
 
     if (!backendResponse.ok) {
-        return NextResponse.json({ error: data.message }, { status: 401 });
+        return NextResponse.json(
+            { error: data.error || 'Login failed' },
+            { status: backendResponse.status }
+        );
+    }
+    else{
+        return NextResponse.json(data, { status: backendResponse.status });
     }
 
-    //  create response
-    const response = NextResponse.json({ success: true });
-
-    //  set cookie HERE
-    response.cookies.set('token', data.token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        path: '/',
-    });
-
-    return response;
 }

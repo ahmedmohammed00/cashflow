@@ -49,8 +49,8 @@ export default function RegisterPage() {
     });
 
     const handleSubmit = async (values: RegisterFormValues) => {
-         try{
-             await fetch('api/auth/register', {
+                setIsLoading(true);
+             const response = await fetch('/api/register', {
                  method: 'POST',
                  body: JSON.stringify(values),
                  headers: {
@@ -58,23 +58,18 @@ export default function RegisterPage() {
                  }
              })
 
-             toast.success('تم انشاء حساب بنجاح')
-             router.push('/')
-         }
-         catch(error: unknown) {
-             if (error instanceof Error)
-             {
-                 toast.error('فشل انشاء حساب', {description: error.message});
-             }
-             else
-             {
-                     toast.error('فشل تسجيل الدخول', { description: 'حصل خطأ غير معروف' });
-             }
 
-             }
-             finally {
-             setIsLoading(false);
-         }
+        if (response.ok ) {
+            setIsLoading(false);
+            router.push('/')
+        }
+        else{
+            setIsLoading(false);
+            console.log('error occured')
+        }
+
+
+
 
 
 

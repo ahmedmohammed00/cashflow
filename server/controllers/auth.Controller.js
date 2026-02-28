@@ -117,6 +117,7 @@ export const registerUser = async (req, res) => {
                     secure: false,      // must be false for HTTP
                     sameSite: 'lax',    // allow dev
                 });
+                console.log(token)
 
 
 
