@@ -15,6 +15,7 @@ export default async function PosPage() {
   let products: Product[] = [];
   try {
     products = await getProducts();
+    console.log(products);
   } catch (err) {
     console.error('Failed to load products:', err);
   }

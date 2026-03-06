@@ -3,9 +3,9 @@
 import * as React from 'react';
 import { Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
-import { DataTable } from '@/components/pos/product-table/data-table';
-import { columns } from '@/components/pos/product-table/columns';
-import { Cart } from '@/components/pos/cart';
+import { DataTable } from './dataTable';
+import { columns } from './columns';
+import { Cart } from './cart';
 import type { CartItem, Product } from '@/lib/types';
 
 interface PosClientProps {

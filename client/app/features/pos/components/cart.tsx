@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { CartItem } from '@/lib/types';
 import { CartItem as CartItemComponent } from './cartItem';
 import { PaymentDialog } from './paymentDialog';
-import { VALID_COUPONS } from './types';
+import { VALID_COUPONS } from '../types';
 import { formatSAR } from "@/lib/utils";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────

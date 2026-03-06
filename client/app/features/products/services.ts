@@ -20,5 +20,6 @@ export async function getProducts(): Promise<Product[]> {
         throw new Error("Failed to fetch products");
     }
 
-    return res.json();
-}
+    const json = await res.json();
+    console.log(json); // check if this is an array or { data: [...] }
+    return Array.isArray(json) ? json : (json.data ?? json.products ?? []);}
