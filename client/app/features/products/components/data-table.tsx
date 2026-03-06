@@ -1,7 +1,5 @@
-import {requireUser} from "@/lib/authHelper";
 
-
-
+"use client"
 
 import * as React from "react"
 import {
